@@ -9,8 +9,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.bhorkarg.indooratlasexample2.MainActivity">
 
-    <TextView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="Get Location"
+        android:id="@+id/btnLocation"
+        android:onClick="buttonClick"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Floor Plan"
+        android:id="@+id/btnFloorPlan"
+        android:onClick="buttonClick"
+        android:layout_below="@+id/btnLocation"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/btnLocation" />
 </RelativeLayout>
