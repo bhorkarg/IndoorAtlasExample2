@@ -1,10 +1,8 @@
 package com.bhorkarg.indooratlasexample2;
 
-import android.net.Uri;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -20,25 +18,13 @@ import com.indooratlas.android.sdk.resources.IAResultCallback;
 import com.indooratlas.android.sdk.resources.IATask;
 import com.squareup.picasso.Picasso;
 
-public class FloorPlanActivity extends AppCompatActivity implements IARegion.Listener, IALocationListener {
+public class FloorPlanActivity extends AppCompatActivity {
 
     IALocationManager mLocationManager;
     IAResourceManager mResourceManager;
 
     IATask<IAFloorPlan> mIATask;
 
-    IAResultCallback<IAFloorPlan> floorPlanResultCallback = new IAResultCallback<IAFloorPlan>() {
-        @Override
-        public void onResult(IAResult<IAFloorPlan> iaResult) {
-            if (iaResult.isSuccess()) {
-                //get the image and load it into ImageView
-                IAFloorPlan iaFloorPlan = iaResult.getResult();
-
-                ImageView imageFloorPlan = (ImageView) findViewById(R.id.imageFloorPlan);
-                Picasso.with(FloorPlanActivity.this).load(iaFloorPlan.getUrl()).into(imageFloorPlan);
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,44 +41,64 @@ public class FloorPlanActivity extends AppCompatActivity implements IARegion.Lis
     @Override
     protected void onResume() {
         super.onResume();
-        mLocationManager.registerRegionListener(this);
-        mLocationManager.requestLocationUpdates(IALocationRequest.create(), this);
+        mLocationManager.registerRegionListener(mRegionListener);
+        mLocationManager.requestLocationUpdates(IALocationRequest.create(), mLocationListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mLocationManager.unregisterRegionListener(this);
-        mLocationManager.removeLocationUpdates(this);
+        mLocationManager.unregisterRegionListener(mRegionListener);
+        mLocationManager.removeLocationUpdates(mLocationListener);
     }
 
-    @Override
-    public void onEnterRegion(IARegion iaRegion) {
-        //Cancel earlier stuck task if any
-        if (mIATask != null && !mIATask.isCancelled()) {
-            mIATask.cancel();
+
+
+    private IALocationListener mLocationListener = new IALocationListener() {
+        @Override
+        public void onLocationChanged(IALocation iaLocation) {
+            //nothing
         }
 
-        //Get FloorPlan loading task
-        mIATask = mResourceManager.fetchFloorPlanWithId(iaRegion.getId());
-        mIATask.setCallback(floorPlanResultCallback, Looper.getMainLooper());
-    }
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+            //nothing
+        }
+    };
 
-    @Override
-    public void onExitRegion(IARegion iaRegion) {
-        //Clear the image
-        ImageView imageFloorPlan = (ImageView) findViewById(R.id.imageFloorPlan);
-        imageFloorPlan.setImageURI(null);
-        Toast.makeText(FloorPlanActivity.this, "Moved out of region", Toast.LENGTH_SHORT).show();
-    }
+    private IARegion.Listener mRegionListener = new IARegion.Listener() {
+        @Override
+        public void onEnterRegion(IARegion iaRegion) {
+            //Cancel earlier stuck task if any
+            if (mIATask != null && !mIATask.isCancelled()) {
+                mIATask.cancel();
+            }
 
-    @Override
-    public void onLocationChanged(IALocation iaLocation) {
-        //Nothing
-    }
+            //Get FloorPlan loading task
+            mIATask = mResourceManager.fetchFloorPlanWithId(iaRegion.getId());
+            mIATask.setCallback(floorPlanResultCallback, Looper.getMainLooper());
+        }
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-        //Nothing
-    }
+        @Override
+        public void onExitRegion(IARegion iaRegion) {
+            //Clear the image
+            ImageView imageFloorPlan = (ImageView) findViewById(R.id.imageFloorPlan);
+            imageFloorPlan.setImageURI(null);
+            Toast.makeText(FloorPlanActivity.this, "Moved out of region", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+
+    IAResultCallback<IAFloorPlan> floorPlanResultCallback = new IAResultCallback<IAFloorPlan>() {
+        @Override
+        public void onResult(IAResult<IAFloorPlan> iaResult) {
+            if (iaResult.isSuccess()) {
+                //get the image and load it into ImageView
+                IAFloorPlan iaFloorPlan = iaResult.getResult();
+
+                ImageView imageFloorPlan = (ImageView) findViewById(R.id.imageFloorPlan);
+                Picasso.with(FloorPlanActivity.this).load(iaFloorPlan.getUrl()).into(imageFloorPlan);
+            }
+        }
+    };
 }
